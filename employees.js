@@ -56,68 +56,59 @@ router.get('/employees', (req, res) => {
     }
 });
 
+
 // Update Employee
-// router.put('/employees/:id', async (req, res) => {
-//     try {
-//         const { name, email, phone } = req.body;
-//         const { id } = req.params;
 
-//         const [result] = await db.query(
-//             'UPDATE employees SET name = ? WHERE id = ?',
-//             [name, id]
-//         );
+router.put('/employees/:id', (req, res) => {
+    try {
+        const { name, email, phone } = req.body;
+        const { id } = req.params;
 
-//         if (result.affectedRows === 0) {
-//             return res.status(404).json({ error: 'Employee not found' });
-//         }
+        db.query(
+            'UPDATE employees SET name = ?, email = ?, phone = ? WHERE employee_id = ?',
+            [name, email, phone, id],function(error,result){
+                if (result.affectedRows === 0) {
+                    return res.status(404).json({ error: 'Employee not found' });
+                }
+                res.json(result)
+            }
+        );
 
-//         await db.query(
-//             'UPDATE employee_contacts SET email = ?, phone = ? WHERE employee_id = ?',
-//             [email, phone, id]
-//         );
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Something went wrong' });
+    }
+});
 
-//         res.json({
-//             id,
-//             name,
-//             email,
-//             phone,
-//         });
-//     } catch (err) {
-//         console.error(err);
-//         res.status(500).json({ error: 'Something went wrong' });
-//     }
-// });
 
-// // Delete Employee
-// router.delete('/employees/:id', async (req, res) => {
-//     try {
-//         const { id } = req.params;
+// Delete Employee
 
-//         const [result] = await db.query(
-//             'DELETE FROM employees WHERE id = ?',
-//             [id]
-//         );
+router.delete('/employees/:id', (req, res) => {
+    try {
+        const { id } = req.params;
 
-//         if (result.affectedRows === 0) {
-//             return res.status(404).json({ error: 'Employee not found' });
-//         }
+        const result = db.query(
+            'DELETE FROM employees WHERE employee_id = ?',
+            [id]
+        );
 
-//         await db.query(
-//             'DELETE FROM employee_contacts WHERE employee_id = ?',
-//             [id]
-//         );
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Employee not found' });
+        }
 
-//         res.json({
-//             id,
-//             message: 'Employee deleted successfully',
-//         });
-//     } catch (err) {
-//         console.error(err);
-//         res.status(500).json({ error: 'Something went wrong' });
-//     }
-// });
+        res.json({
+            id,
+            message: 'Employee deleted successfully',
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Something went wrong' });
+    }
+});
 
-// Get Employee
+
+// Get Employee by id
+
 router.get('/employees/:id', (req, res) => {
     try {
         const { id } = req.params;
