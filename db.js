@@ -1,11 +1,12 @@
-const mysql = require('mysql2/promise');
+const mysql = require('mysql');
 
-const pool = mysql.createPool({
+const con = mysql.createConnection({
   host: 'localhost',
-  user: 'root',
+  user: 'sqluser',
   password: 'password',
   database: 'my_database',
-  connectionLimit: 10,
 });
 
-module.exports = pool;
+module.exports = con;
+
+
