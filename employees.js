@@ -9,11 +9,21 @@ db.connect()
 
 router.post('/employees', (req, res) => {
     try {
-        const { employee_id, name, job, email, phone, address, city, state } = req.body;
+        const { employee_id, name, job, email, phone, address, city, state, primary_name, primary_phone, primary_relation, secondary_name, secondary_phone, secondary_relation } = req.body;
 
         db.query(
-            'INSERT INTO employees (employee_id, name, email, phone, address, city, state) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            'INSERT INTO employees (employee_id, name, job, email, phone, address, city, state) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
             [employee_id, job, name, email, phone, address, city, state]
+        );
+
+        db.query(
+            'INSERT INTO primary_contacts (employee_id, primary_name, primary_phone, primary_relation) VALUES (?, ?, ?, ?)',
+            [employee_id, primary_name, primary_phone, primary_relation]
+        );
+
+        db.query(
+            'INSERT INTO secondary_contacts (employee_id, secondary_name, secondary_phone, secondary_relation) VALUES (?, ?, ?, ?)',
+            [employee_id, secondary_name, secondary_phone, secondary_relation]
         );
 
         res.status(201).json({
@@ -24,7 +34,13 @@ router.post('/employees', (req, res) => {
             phone,
             address,
             city, 
-            state
+            state,
+            primary_name, 
+            primary_phone, 
+            primary_relation,
+            secondary_name, 
+            secondary_phone, 
+            secondary_relation
         });
     } catch (err) {
         console.error(err);
