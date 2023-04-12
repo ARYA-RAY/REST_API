@@ -28,8 +28,8 @@ router.post('/employees', (req, res) => {
 
         res.status(201).json({
             employee_id,
-            job,
             name,
+            job,
             email,
             phone,
             address,
@@ -58,7 +58,7 @@ router.get('/employees', (req, res) => {
         const offset = (page - 1) * limit;
 
         db.query(
-            'SELECT e.employee_id, e.name, e.job, e.email, e.phone, e.address, e.city, e.state FROM employees e ORDER BY e.employee_id LIMIT ? OFFSET ?',[limit, offset],function(error,result){
+            'SELECT e.employee_id, e.name, e.job, e.email, e.phone, e.address, e.city, e.state, ec.primary_name, ec.primary_phone, ec.primary_relation, ed.secondary_name, ed.secondary_phone, ed.secondary_relation FROM employees e LEFT JOIN primary_contacts ec ON e.employee_id = ec.employee_id LEFT JOIN secondary_contacts ed ON e.employee_id = ed.employee_id ORDER BY e.employee_id LIMIT ? OFFSET ?',[limit, offset],function(error,result){
                 if(error) throw error;
                 res.json(result)
             }
@@ -74,18 +74,39 @@ router.get('/employees', (req, res) => {
 
 router.put('/employees/:id', (req, res) => {
     try {
-        const { name, job, email, phone, address, city, state } = req.body;
+        const { name, job, email, phone, address, city, state, primary_name, primary_phone, primary_relation, secondary_name, secondary_phone, secondary_relation } = req.body;
         const { id } = req.params;
 
         db.query(
             'UPDATE employees SET name = ?, job = ?, email = ?, phone = ?, address = ?, city = ?, state = ? WHERE employee_id = ?',
-            [name, job, email, phone, address, city, state, id],function(error,result){
-                if (result.affectedRows === 0) {
-                    return res.status(404).json({ error: 'Employee not found' });
-                }
-                res.json(result)
-            }
+            [name, job, email, phone, address, city, state, id]
         );
+
+        db.query(
+            'UPDATE primary_contacts SET primary_name = ?, primary_phone = ?, primary_relation = ? WHERE employee_id = ?',
+            [primary_name, primary_phone, primary_relation, id]
+        );
+
+        db.query(
+            'UPDATE secondary_contacts SET secondary_name = ?, secondary_phone = ?, secondary_relation = ? WHERE employee_id = ?',
+            [secondary_name, secondary_phone, secondary_relation, id]
+        );
+
+        res.json({   
+            name,
+            job,
+            email,
+            phone,
+            address,
+            city, 
+            state,
+            primary_name, 
+            primary_phone, 
+            primary_relation,
+            secondary_name, 
+            secondary_phone, 
+            secondary_relation
+        });
 
     } catch (err) {
         console.error(err);
@@ -127,7 +148,7 @@ router.get('/employees/:id', (req, res) => {
         const { id } = req.params;
 
         db.query(
-            'SELECT e.employee_id, e.name, e.job, e.email, e.phone, e.address, e.city, e.state FROM employees e WHERE e.employee_id = ?',
+            'SELECT e.employee_id, e.name, e.job, e.email, e.phone, e.address, e.city, e.state, ec.primary_name, ec.primary_phone, ec.primary_relation, ed.secondary_name, ed.secondary_phone, ed.secondary_relation FROM employees e LEFT JOIN primary_contacts ec ON e.employee_id = ec.employee_id LEFT JOIN secondary_contacts ed ON e.employee_id = ed.employee_id WHERE e.employee_id = ?',
             [id],function(error,result){
                 if (result.length === 0) {
                     return res.status(404).json({ error: 'Employee not found' });
